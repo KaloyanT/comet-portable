@@ -88,14 +88,14 @@ public class InspecCommand extends CommandLine {
         try {
             resultHandler.waitFor();
         } catch(InterruptedException e) {
-            this.log.error("Inspec Comannd was interrupted by system");
+            this.log.error("Inspec Command was interrupted by system");
             this.log.error(e.getMessage());
             this.log.error("Exception", e);
             Thread.currentThread().interrupt();
         }
 
         if(errorHandler.getLines().size() > 0) {
-            log.error("Inspec Comannd errors occured: ");
+            log.error("Inspec Command errors occurred: ");
             for(String line : errorHandler.getLines()) {
                 this.log.error(line);
             }

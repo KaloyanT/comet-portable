@@ -9,18 +9,19 @@ public abstract class ComplianceRun implements Runnable {
 
     protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    protected final long jobId;
+    // protected final long jobId;
 
     protected Job job;
 
     protected JobResult jobResult;
 
-    public ComplianceRun(long jobId) {
-        this.jobId = jobId;
+    public ComplianceRun(Job job) {
+        this.job = job;
     }
 
-    public final synchronized Job setJob(long jobId) {
+    public final synchronized Job setJob(Job job) {
         // this.job = this.jobRepsitory.findOne(jobId);
+        this.job = job;
         return this.job;
     }
 
@@ -28,10 +29,6 @@ public abstract class ComplianceRun implements Runnable {
 
     public Job getJob() {
         return job;
-    }
-
-    public void setJob(Job job) {
-        this.job = job;
     }
 
 }

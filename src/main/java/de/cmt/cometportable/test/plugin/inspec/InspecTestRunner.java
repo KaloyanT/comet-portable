@@ -89,11 +89,11 @@ public class InspecTestRunner implements TestRunner {
             inspecResult = inspec.test(this.exportDestination, env);
         } else */
 
-        if(this.job.getEnviromentType() != Job.EnvironmentType.LOCAL) {
+        if(this.job.getEnvironmentType() != Job.EnvironmentType.LOCAL) {
             inspecResult = inspec.test(
                     this.exportDestination,
-                    this.job.getEnviromentType(),
-                    this.job.getEnviromentAddress()
+                    this.job.getEnvironmentType(),
+                    this.job.getEnvironmentAddress()
             );
         } else {
             inspecResult = inspec.test(this.exportDestination);
@@ -123,8 +123,8 @@ public class InspecTestRunner implements TestRunner {
                 }
             }
 
-        } else if(this.job.getEnviromentType() == EnvironmentType.SSH) {
-            env.setHost(this.job.getEnviromentAddress());
+        } else if(this.job.getEnvironmentType() == EnvironmentType.SSH) {
+            env.setHost(this.job.getEnvironmentAddress());
             SSHConnection ssh = new SSHConnection(env);
             reachable = ssh.isHostReachable();
         }

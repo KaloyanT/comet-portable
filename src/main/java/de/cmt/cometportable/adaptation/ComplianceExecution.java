@@ -9,14 +9,14 @@ import java.io.File;
 
 public class ComplianceExecution extends ComplianceRun {
 
-    public ComplianceExecution(long jobId) {
-        super(jobId);
+    public ComplianceExecution(Job job) {
+        super(job);
     }
 
     @Override
     protected synchronized void setExecutionJob() {
-        this.log.debug("Setting Up Execution Job Info - Job ID {} ", this.jobId);
-        this.job = this.setJob(jobId);
+        this.log.debug("Setting Up Execution Job Info - Job ID {} ", this.job.getId());
+        this.job = this.setJob(job);
 
         if(this.job == null) {
             this.log.error("Job is not found - got null! ");

@@ -10,7 +10,8 @@ public class Job implements Serializable {
         NEW,			// created and not yet queued
         QUEUED,			// queued in thread pool
         RUNNING,		// currently running
-        FINISHED		// job finished
+        FINISHED,		// job finished
+        EXPORTED
     }
 
     public enum JobType {
@@ -37,15 +38,15 @@ public class Job implements Serializable {
 
     private JobType type;
 
-    private String enviroment_address;
+    private String environment_address;
 
-    private EnvironmentType enviroment_type = EnvironmentType.LOCAL;
+    private EnvironmentType environment_type = EnvironmentType.LOCAL;
 
     private boolean linkedEnvironment = true;
 
     public boolean isLinkedEnvironment() {
         // return linkedEnvironment;
-        return this.getEnviromentAddress() == null;
+        return this.getEnvironmentAddress() == null;
     }
 
     private String title;
@@ -106,21 +107,21 @@ public class Job implements Serializable {
         this.type = type;
     }
 
-    public String getEnviromentAddress() {
-        return enviroment_address;
+    public String getEnvironmentAddress() {
+        return environment_address;
     }
 
-    public void setEnviromentAddress(String enviroment_address) {
-        this.enviroment_address = enviroment_address;
+    public void setEnvironmentAddress(String environment_address) {
+        this.environment_address = environment_address;
         this.linkedEnvironment = false;
     }
 
-    public EnvironmentType getEnviromentType() {
-        return enviroment_type;
+    public EnvironmentType getEnvironmentType() {
+        return environment_type;
     }
 
-    public void setEnviromentType(EnvironmentType enviroment_type) {
-        this.enviroment_type = enviroment_type;
+    public void setEnvironmentType(EnvironmentType environment_type) {
+        this.environment_type = environment_type;
     }
 
 }
