@@ -4,7 +4,6 @@ import de.cmt.cometportable.test.TestRunner;
 import de.cmt.cometportable.test.domain.Job;
 import de.cmt.cometportable.test.domain.Job.JobState;
 import de.cmt.cometportable.test.plugin.TestRunnerFactory;
-
 import java.io.File;
 
 public class ComplianceExecution extends ComplianceRun {

@@ -25,6 +25,10 @@ public class Environment implements Serializable {
 
     private String keyFingerprint;
 
+    private String publicKeyFile;
+
+    private String shorthandName;
+
     //private Set<CustomerProject> projects = new HashSet<>();
 
     public Long getId() {
@@ -138,6 +142,18 @@ public class Environment implements Serializable {
         this.keyFingerprint = keyFingerprint;
     }
 
+    public void setPublicKeyFile(String publicKeyFile) {
+        this.publicKeyFile = publicKeyFile;
+    }
+
+    public String getShorthandName() {
+        return shorthandName;
+    }
+
+    public void setShorthandName(String shorthandName) {
+        this.shorthandName = shorthandName;
+    }
+
     /*
     public Set<CustomerProject> getProjects() {
         return projects;
@@ -201,10 +217,6 @@ public class Environment implements Serializable {
                 ", keyFile='" + getKeyFile() + "'" +
                 ", keyFingerprint='" + getKeyFingerprint() + "'" +
                 "}";
-    }
-
-    public String getShorthandName() {
-        return "ev";
     }
 }
 

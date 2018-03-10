@@ -12,7 +12,6 @@ import org.apache.commons.lang3.SystemUtils;
 import org.apache.log4j.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -104,14 +103,14 @@ public class InspecCommand extends CommandLine {
         return logHandler;
     }
 
-    protected InspecCommand addEnviromentArgument(EnvironmentType type, String address) {
+    protected InspecCommand addEnvironmentArgument(EnvironmentType type, String address) {
         this.addArgument("--target");
         this.addArgument(this.envProtocol.get(type).concat(address));
 
         return this;
     }
 
-    protected InspecCommand addEnviromentArgument(Environment environment) {
+    protected InspecCommand addEnvironmentArgument(Environment environment) {
 
         String connection = "";
 
@@ -201,7 +200,7 @@ public class InspecCommand extends CommandLine {
 
     public InspecOutput test(File profileFolder, EnvironmentType type, String address) {
         this.addExecutionArgument();
-        this.addEnviromentArgument(type, address);
+        this.addEnvironmentArgument(type, address);
         this.addFormatArgument();
         this.addArgument(profileFolder.getPath());
 
@@ -210,7 +209,7 @@ public class InspecCommand extends CommandLine {
 
     public InspecOutput test(File profileFolder, Environment environment) {
         this.addExecutionArgument();
-        this.addEnviromentArgument(environment);
+        this.addEnvironmentArgument(environment);
         this.addFormatArgument();
         this.addArgument(profileFolder.getPath());
 

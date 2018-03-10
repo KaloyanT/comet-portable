@@ -1,6 +1,7 @@
 package de.cmt.cometportable.test.domain;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class Job implements Serializable {
 
@@ -30,7 +31,7 @@ public class Job implements Serializable {
 
     private String artifactType;
 
-    private Serializable artifact;
+    private String artifact;
 
     private JobState state;
 
@@ -41,6 +42,8 @@ public class Job implements Serializable {
     private String environment_address;
 
     private EnvironmentType environment_type = EnvironmentType.LOCAL;
+
+    private List<Environment> environments;
 
     private boolean linkedEnvironment = true;
 
@@ -75,11 +78,11 @@ public class Job implements Serializable {
         this.artifactType = artifactType;
     }
 
-    public Serializable getArtifact() {
+    public String getArtifact() {
         return artifact;
     }
 
-    public void setArtifact(Serializable artifact) {
+    public void setArtifact(String artifact) {
         this.artifact = artifact;
     }
 
@@ -124,4 +127,11 @@ public class Job implements Serializable {
         this.environment_type = environment_type;
     }
 
+    public List<Environment> getEnvironments() {
+        return environments;
+    }
+
+    public void setEnvironments(List<Environment> environments) {
+        this.environments = environments;
+    }
 }

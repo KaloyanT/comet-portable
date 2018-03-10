@@ -11,7 +11,6 @@ import de.cmt.cometportable.test.plugin.inspec.execution.InspecCommand;
 import de.cmt.cometportable.test.plugin.inspec.execution.InspecOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +48,7 @@ public class InspecTestRunner implements TestRunner {
         // check correct state of class
         if(this.exportDestination == null) {
             throw new IllegalStateException(
-                    "Export Destintaion is missing, stopping execution");
+                    "Export Destination is missing, stopping execution");
         }
 
         this.generateTestCode();
@@ -82,26 +81,14 @@ public class InspecTestRunner implements TestRunner {
         InspecCommand inspec = this.getInspecCommandRunner();
         InspecOutput inspecResult;
 
-        /*
-        if(this.job.isLinkedEnvironment()) {
-            // TODO not only take first ...
-            Environment env = (Environment) (this.job.getArtifact()).getEnvironments().toArray()[0];
-            inspecResult = inspec.test(this.exportDestination, env);
-        } else */
+        // TODO not only take first ...
+        Environment env = this.job.getEnvironments().get(0);
 
-        if(this.job.getEnvironmentType() != Job.EnvironmentType.LOCAL) {
-            inspecResult = inspec.test(
-                    this.exportDestination,
-                    this.job.getEnvironmentType(),
-                    this.job.getEnvironmentAddress()
-            );
-        } else {
-            inspecResult = inspec.test(this.exportDestination);
-        }
+        inspecResult = inspec.test(this.exportDestination, env);
 
         InspecEvaluate inspecJson = new InspecEvaluate(String.join(" ", inspecResult.getLines()));
 
-        this.log.debug("Evaluated InSpec Exec - Result {}", inspecJson.getResult().toString());
+        this.log.info("Evaluated InSpec Exec - Result {}", inspecJson.getResult().toString());
         this.addJobResultItem(inspec.getCommandString(), inspecResult.getLines(), inspecJson.getResult());
 
     }
@@ -136,7 +123,6 @@ public class InspecTestRunner implements TestRunner {
                 (reachable) ? ResultType.VALID : ResultType.INVALID
         );
     }
-
 
     private void addJobResultItem(String executor, List<String> messages, ResultType type) {
 

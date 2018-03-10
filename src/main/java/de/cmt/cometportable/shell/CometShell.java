@@ -25,55 +25,66 @@ public class CometShell {
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
 
-    private final Executor taskExecutor;
-
     @Autowired
     private CometService cometService;
 
     @Autowired
     private CometShellUtil cometShellUtil;
 
+    private final Executor taskExecutor;
+
     public CometShell(Executor executor) {
         this.taskExecutor = executor;
-    }
-
-    @ShellMethod("Add two integers")
-    public int add(int a, int b) {
-        return a + b;
     }
 
     @ShellMethod("Runs the specified Job and returns the results in the specified way")
     public void run(@ShellOption(value = {"-r", "--result-type"}, defaultValue = "i") String resultType,
                     @ShellOption(value = {"-j", "--job-id"}) Long jobId,
-                    @ShellOption(value = {"-ci", "--comet-instance"}, defaultValue = "0") Long cometInstance) {
+                    @ShellOption(value = {"-c", "--comet-instance"}, defaultValue = "0") Long cometInstance) {
 
-        // Figure out all the details for the Job object and create it properly
-        // Read everything as a ObjectNode and then create the Job object
-        Job job = new Job();
-        job.setId(3512L);
-        job.setArtifactType("de.cmt.domain.entity.artifact.CustomerProject");
-        job.setState(Job.JobState.EXPORTED);
-        job.setType(Job.JobType.EXECUTION);
+        Job job = cometShellUtil.createJob(jobId);
 
-        job.setTitle("Linux File Existence CP");
-        job.setEnvironmentType(Job.EnvironmentType.LOCAL);
-        job.setEnvironmentAddress(null);
-        job.setArtifact("CustomerProject{id=234, title='Linux File Existence CP', " +
-                "description='CP for the Linux File Existence Solution', artifactId='com.linux.file.example', " +
-                "significance='2', version='1.0'}");
+        if(job == null) {
+            return;
+        }
 
         // create Execution based on Job
         ComplianceExecution execution = new ComplianceExecution(job);
         beanFactory.autowireBean(execution);
 
-        log.debug("REST request to create execution job DONE");
-
         this.taskExecutor.execute(execution);
+
+        log.info("Starting Job {} asynchronously. You will be notified after every status update", job.getId());
+        log.info("Return to Shell by pressing ENTER");
+
     }
 
     @ShellMethod("Lists all Jobs that are Exported by COMET")
-    public String list(@ShellOption(value = {"-ci", "--comet-instance"}, defaultValue = "0") Long cometInstance) {
+    public String list(@ShellOption(value = {"-c", "--comet-instance"}, defaultValue = "0") Long cometInstance) {
         List<ObjectNode> exportedJobs = this.cometService.getExportedJobs();
+
+        if(exportedJobs == null) {
+            log.error("Cannot list exported Jobs. No connection to COMET");
+            return null;
+        }
+
         return cometShellUtil.listExportedJobs(exportedJobs);
+    }
+
+    @ShellMethod("Prints the results for a given Job and/or imports them to a COMET Instance")
+    public String res(@ShellOption(value = {"-j", "--job-id"}) Long jobId,
+                      @ShellOption(value = {"-a", "--action"}, defaultValue = "p") String action,
+                      @ShellOption(value = {"-c", "--comet-instance"}, defaultValue =  "0") Long cometInstance) {
+
+        String res = cometShellUtil.getJobResult(jobId);
+
+        return res;
+    }
+
+    @ShellMethod("Downloads the test files for a given Job")
+    public void download(@ShellOption(value = {"-j", "--job-id"}) Long jobId,
+                         @ShellOption(value = {"-c", "--comet-instance"}, defaultValue =  "0") Long cometInstance) {
+
+        log.error("Job {} doesn't exist at COMET instance {}", jobId, cometInstance);
     }
 }
