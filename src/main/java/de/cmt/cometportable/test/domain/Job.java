@@ -47,6 +47,8 @@ public class Job implements Serializable {
 
     private boolean linkedEnvironment = true;
 
+    private boolean importTestResultsOnJobCompletion = true;
+
     public boolean isLinkedEnvironment() {
         // return linkedEnvironment;
         return this.getEnvironmentAddress() == null;
@@ -131,7 +133,17 @@ public class Job implements Serializable {
         return environments;
     }
 
+    public boolean getImportTestResultsOnJobCompletion() {
+        return importTestResultsOnJobCompletion;
+    }
+
     public void setEnvironments(List<Environment> environments) {
         this.environments = environments;
+    }
+
+
+
+    public void setImportTestResultsOnJobCompletion(boolean importTestResultsOnJobCompletion) {
+        this.importTestResultsOnJobCompletion = importTestResultsOnJobCompletion;
     }
 }

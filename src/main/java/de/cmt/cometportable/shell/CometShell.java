@@ -38,14 +38,22 @@ public class CometShell {
     }
 
     @ShellMethod("Runs the specified Job and returns the results in the specified way")
-    public void run(@ShellOption(value = {"-r", "--result-type"}, defaultValue = "i") String resultType,
-                    @ShellOption(value = {"-j", "--job-id"}) Long jobId,
+    public void run(@ShellOption(value = {"-j", "--job-id"}) Long jobId,
+                    @ShellOption(value = {"-r", "--result-type"}, defaultValue = "i", help = "Options: i == import, f == save to file, if/fi == combines i and f") String resultType,
                     @ShellOption(value = {"-c", "--comet-instance"}, defaultValue = "0") Long cometInstance) {
 
         Job job = cometShellUtil.createJob(jobId);
 
         if(job == null) {
             return;
+        }
+
+        log.info(resultType);
+
+        // If the user chose not to import the test results back to COMET
+        // immediately after Job completion, only save them to a file
+        if(resultType.equals("f")) {
+            job.setImportTestResultsOnJobCompletion(false);
         }
 
         // create Execution based on Job
@@ -73,7 +81,7 @@ public class CometShell {
 
     @ShellMethod("Prints the results for a given Job and/or imports them to a COMET Instance")
     public String res(@ShellOption(value = {"-j", "--job-id"}) Long jobId,
-                      @ShellOption(value = {"-a", "--action"}, defaultValue = "p") String action,
+                      @ShellOption(value = {"-a", "--action"}, defaultValue = "p", help = "Options: p == print, i == import, pi/ip == combines p and i") String action,
                       @ShellOption(value = {"-c", "--comet-instance"}, defaultValue =  "0") Long cometInstance) {
 
         String res = cometShellUtil.getJobResult(jobId);

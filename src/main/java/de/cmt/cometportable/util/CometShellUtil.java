@@ -1,6 +1,8 @@
 package de.cmt.cometportable.util;
 
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.cmt.cometportable.test.domain.Job;
 import org.slf4j.Logger;
@@ -21,6 +23,8 @@ public class CometShellUtil {
 
     private final static String JOB_CONFIG_FILE = "job.json";
 
+    private final static String JOB_RESULT_FILE = "result.json";
+
 
     public String listExportedJobs(List<ObjectNode> jobs) {
 
@@ -31,7 +35,9 @@ public class CometShellUtil {
             ObjectNode node = jobs.get(i);
 
             if(node.has("id")) {
-                stringBuilder.append("Job " + node.get("id") + (i == jobs.size() - 1 ? "" : "\n"));
+                stringBuilder.append("Job ");
+                stringBuilder.append(node.get("id"));
+                stringBuilder.append((i == jobs.size() - 1) ? "" : "\n");
             }
         }
 
@@ -45,7 +51,7 @@ public class CometShellUtil {
         String jobDirectory = JOBS_DIR + "/" + CUSTOMER_PROJECT_JOB_DIR + jobId + "/" + JOB_CONFIG_FILE;
         File jsonFile = new File(jobDirectory);
 
-        if(jsonFile == null || !jsonFile.exists()) {
+        if(!jsonFile.exists()) {
             log.error("Job {} doesn't exist!", jobId);
             return null;
         }
@@ -65,5 +71,29 @@ public class CometShellUtil {
     public String getJobResult(Long jobId) {
 
         return "temp";
+    }
+
+    public void saveJobResults(Job job) {
+
+        log.info("Saving Job results for Job {} to file", job.getId());
+
+        if(job == null || job.getResult() == null || job.getResult().getItems().isEmpty()) {
+            return;
+        }
+
+        String jobResultFile = JOBS_DIR + "/" + CUSTOMER_PROJECT_JOB_DIR + job.getId() + "/" + JOB_RESULT_FILE;
+
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode jobResult = mapper.valueToTree(job.getResult());
+
+        ObjectWriter writer = mapper.writer(new DefaultPrettyPrinter());
+
+        try {
+            writer.writeValue(new File(jobResultFile), jobResult);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+
+        log.info("Saving Job results for Job {} to file COMPLETE", job.getId());
     }
 }

@@ -1,5 +1,7 @@
 package de.cmt.cometportable.test.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.Serializable;
 
 public class JobResultItem implements Serializable {
@@ -14,6 +16,7 @@ public class JobResultItem implements Serializable {
 
     private String executor_message;
 
+    @JsonIgnore
     private JobResult jobResult;
 
     public Long getId() {
