@@ -31,11 +31,19 @@ public class CometService {
 
     private final static String usernameField = "j_username";
 
+    private final static String usernameFieldValue = "admin";
+
     private final static String passwordField = "j_password";
+
+    private final static String passwordFieldValue = "admin";
 
     private final static String rememberMeField = "remember-me";
 
+    private final static String rememberMeFieldValue = "undefined";
+
     private final static String submitField = "submit";
+
+    private final static String submitFieldValue = "Login";
 
     private final static String authenticationUrl = "http://localhost:8080/api/authentication";
 
@@ -65,10 +73,10 @@ public class CometService {
 
         // Taken from: https://stackoverflow.com/questions/38372422/how-to-post-form-data-with-spring-resttemplate
         MultiValueMap<String, String> loginMap = new LinkedMultiValueMap<>();
-        loginMap.add(usernameField, "admin");
-        loginMap.add(passwordField, "admin");
-        loginMap.add(rememberMeField, "undefined");
-        loginMap.add(submitField, "Login");
+        loginMap.add(usernameField, usernameFieldValue);
+        loginMap.add(passwordField, passwordFieldValue);
+        loginMap.add(rememberMeField, rememberMeFieldValue);
+        loginMap.add(submitField, submitFieldValue);
 
         RestTemplate restTemplate = new RestTemplate();
 
@@ -148,7 +156,7 @@ public class CometService {
         }
 
         if(job.getResult() == null | job.getResult().getItems().isEmpty()) {
-            log.debug("Invalid Job Results for Job {}", job.getId());
+            log.error("Invalid Job Results for Job {}", job.getId());
             return;
         }
 

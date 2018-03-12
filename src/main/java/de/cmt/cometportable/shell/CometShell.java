@@ -3,6 +3,8 @@ package de.cmt.cometportable.shell;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.cmt.cometportable.adaptation.ComplianceExecution;
 import de.cmt.cometportable.test.domain.Job;
+import de.cmt.cometportable.test.domain.JobResult;
+import de.cmt.cometportable.test.domain.JobResultItem;
 import de.cmt.cometportable.util.CometService;
 import de.cmt.cometportable.util.CometShellUtil;
 import org.slf4j.Logger;
@@ -39,7 +41,7 @@ public class CometShell {
 
     @ShellMethod("Runs the specified Job and returns the results in the specified way")
     public void run(@ShellOption(value = {"-j", "--job-id"}) Long jobId,
-                    @ShellOption(value = {"-r", "--result-type"}, defaultValue = "i", help = "Options: i == import, f == save to file, if/fi == combines i and f") String resultType,
+                    @ShellOption(value = {"-i", "--import-results"}, help = "Import the results to COMET") boolean importResults,
                     @ShellOption(value = {"-c", "--comet-instance"}, defaultValue = "0") Long cometInstance) {
 
         Job job = cometShellUtil.createJob(jobId);
@@ -48,11 +50,9 @@ public class CometShell {
             return;
         }
 
-        log.info(resultType);
-
         // If the user chose not to import the test results back to COMET
         // immediately after Job completion, only save them to a file
-        if(resultType.equals("f")) {
+        if(importResults == false) {
             job.setImportTestResultsOnJobCompletion(false);
         }
 
@@ -69,6 +69,7 @@ public class CometShell {
 
     @ShellMethod("Lists all Jobs that are Exported by COMET")
     public String list(@ShellOption(value = {"-c", "--comet-instance"}, defaultValue = "0") Long cometInstance) {
+
         List<ObjectNode> exportedJobs = this.cometService.getExportedJobs();
 
         if(exportedJobs == null) {
@@ -81,12 +82,53 @@ public class CometShell {
 
     @ShellMethod("Prints the results for a given Job and/or imports them to a COMET Instance")
     public String res(@ShellOption(value = {"-j", "--job-id"}) Long jobId,
-                      @ShellOption(value = {"-a", "--action"}, defaultValue = "p", help = "Options: p == print, i == import, pi/ip == combines p and i") String action,
+                      @ShellOption(value = {"-p", "--print"}) boolean printResults,
+                      @ShellOption(value = {"-m", "--message"}, help = "Prints the Executor Message") boolean printMesssage,
+                      @ShellOption(value = {"-i", "--import-results"}) boolean importResults,
                       @ShellOption(value = {"-c", "--comet-instance"}, defaultValue =  "0") Long cometInstance) {
 
-        String res = cometShellUtil.getJobResult(jobId);
+        JobResult jobResult = cometShellUtil.getJobResult(jobId);
 
-        return res;
+        if(jobResult == null || jobResult.getItems().size() < 3) {
+            return null;
+        }
+
+        StringBuilder res = new StringBuilder();
+
+        if(printResults == true) {
+            res.append("Connection Test: ");
+            res.append(jobResult.getItems().get(0).getType());
+            res.append("\n");
+
+            res.append("InSpec Profile Check: ");
+            res.append(jobResult.getItems().get(1).getType());
+            res.append("\n");
+
+            res.append("InSpec Test Result: ");
+            res.append(jobResult.getItems().get(2).getType());
+            res.append("\n");
+        }
+
+        if(printMesssage == true) {
+            res.append("InSpec Profile Check Executor Message: ");
+            res.append(jobResult.getItems().get(1).getExecutor_message());
+            res.append("\n");
+
+            res.append("InSpec Test Result Executor Message: ");
+            res.append(jobResult.getItems().get(2).getExecutor_message());
+            res.append("\n");
+        }
+
+        if(importResults == true) {
+
+            // Create the Job Object again by reading it's configuration and set its results
+            Job job = cometShellUtil.createJob(jobId);
+            job.setResult(jobResult);
+            job.setState(Job.JobState.FINISHED);
+            cometService.importJobResults(job);
+        }
+
+        return res.toString();
     }
 
     @ShellMethod("Downloads the test files for a given Job")

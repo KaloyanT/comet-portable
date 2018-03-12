@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.cmt.cometportable.test.domain.Job;
+import de.cmt.cometportable.test.domain.JobResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -48,10 +49,10 @@ public class CometShellUtil {
 
         log.info("Reading configuration for Job {}", jobId);
 
-        String jobDirectory = JOBS_DIR + "/" + CUSTOMER_PROJECT_JOB_DIR + jobId + "/" + JOB_CONFIG_FILE;
-        File jsonFile = new File(jobDirectory);
+        String jobConfigFilePath = JOBS_DIR + "/" + CUSTOMER_PROJECT_JOB_DIR + jobId + "/" + JOB_CONFIG_FILE;
+        File configFile = new File(jobConfigFilePath);
 
-        if(!jsonFile.exists()) {
+        if(!configFile.exists()) {
             log.error("Job {} doesn't exist!", jobId);
             return null;
         }
@@ -60,17 +61,36 @@ public class CometShellUtil {
         Job job = null;
 
         try {
-            job = mapper.readValue(jsonFile, Job.class);
+            job = mapper.readValue(configFile, Job.class);
         } catch (IOException e) {
-            log.error("Invalid JSON for Job {}", jobId);
+            log.error("Invalid Configuration for Job {}", jobId);
         }
 
         return job;
     }
 
-    public String getJobResult(Long jobId) {
+    public JobResult getJobResult(Long jobId) {
 
-        return "temp";
+        log.info("Reading results for Job {}", jobId);
+
+        String resultsFilePath = JOBS_DIR + "/" + CUSTOMER_PROJECT_JOB_DIR + jobId + "/" + JOB_RESULT_FILE;
+        File resultsFile = new File(resultsFilePath);
+
+        if(!resultsFile.exists()) {
+            log.error("Results for Job {} don't exist!", jobId);
+            return null;
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        JobResult jobResult = null;
+
+        try {
+            jobResult = mapper.readValue(resultsFile, JobResult.class);
+        } catch (IOException e) {
+            log.error("Invalid Results file for Job {}", jobId);
+        }
+
+        return jobResult;
     }
 
     public void saveJobResults(Job job) {
