@@ -81,10 +81,13 @@ public class InspecTestRunner implements TestRunner {
         InspecCommand inspec = this.getInspecCommandRunner();
         InspecOutput inspecResult;
 
-        // TODO not only take first ...
-        Environment env = this.job.getEnvironments().get(0);
-
-        inspecResult = inspec.test(this.exportDestination, env);
+        if(this.job.isLocalEnvironment()) {
+            inspecResult = inspec.test(this.exportDestination);
+        } else {
+            // TODO not only take first ...
+            Environment env = this.job.getEnvironments().get(0);
+            inspecResult = inspec.test(this.exportDestination, env);
+        }
 
         InspecEvaluate inspecJson = new InspecEvaluate(String.join(" ", inspecResult.getLines()));
 

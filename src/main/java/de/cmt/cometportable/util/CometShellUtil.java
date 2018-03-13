@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.cmt.cometportable.test.domain.Job;
 import de.cmt.cometportable.test.domain.JobResult;
+import de.cmt.cometportable.test.domain.JobStringConstants;
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -17,15 +20,6 @@ import java.util.List;
 public class CometShellUtil {
 
     private final Logger log = LoggerFactory.getLogger(CometShellUtil.class);
-
-    private final static String JOBS_DIR = "jobs";
-
-    private final static String CUSTOMER_PROJECT_JOB_DIR = "de.cmt.domain.entity.artifact.CustomerProject.job.";
-
-    private final static String JOB_CONFIG_FILE = "job.json";
-
-    private final static String JOB_RESULT_FILE = "result.json";
-
 
     public String listExportedJobs(List<ObjectNode> jobs) {
 
@@ -49,13 +43,15 @@ public class CometShellUtil {
 
         log.info("Reading configuration for Job {}", jobId);
 
-        String jobConfigFilePath = JOBS_DIR + "/" + CUSTOMER_PROJECT_JOB_DIR + jobId + "/" + JOB_CONFIG_FILE;
-        File configFile = new File(jobConfigFilePath);
-
-        if(!configFile.exists()) {
+        if(this.jobExists(jobId) == false) {
             log.error("Job {} doesn't exist!", jobId);
             return null;
         }
+
+        String jobConfigFilePath = JobStringConstants.getJobsDir() + "/"
+                + JobStringConstants.getCustomerProjectJobDir() + jobId + "/"
+                + JobStringConstants.getJobConfigFile();
+        File configFile = new File(jobConfigFilePath);
 
         ObjectMapper mapper = new ObjectMapper();
         Job job = null;
@@ -73,7 +69,9 @@ public class CometShellUtil {
 
         log.info("Reading results for Job {}", jobId);
 
-        String resultsFilePath = JOBS_DIR + "/" + CUSTOMER_PROJECT_JOB_DIR + jobId + "/" + JOB_RESULT_FILE;
+        String resultsFilePath = JobStringConstants.getJobsDir() + "/"
+                + JobStringConstants.getCustomerProjectJobDir() + jobId + "/"
+                + JobStringConstants.getJobResultFile();
         File resultsFile = new File(resultsFilePath);
 
         if(!resultsFile.exists()) {
@@ -101,7 +99,9 @@ public class CometShellUtil {
             return;
         }
 
-        String jobResultFile = JOBS_DIR + "/" + CUSTOMER_PROJECT_JOB_DIR + job.getId() + "/" + JOB_RESULT_FILE;
+        String jobResultFile = JobStringConstants.getJobsDir() + "/"
+                + JobStringConstants.getCustomerProjectJobDir() + job.getId() + "/"
+                + JobStringConstants.getJobResultFile();
 
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode jobResult = mapper.valueToTree(job.getResult());
@@ -115,5 +115,48 @@ public class CometShellUtil {
         }
 
         log.info("Saving Job results for Job {} to file COMPLETE", job.getId());
+    }
+
+    public void unzipJobFiles(Long jobId, File jobFile) {
+
+        log.info("Unzipping ZIP file for Job {}", jobId);
+
+        if(jobFile == null || !jobFile.exists()) {
+            log.error("ZIP file for Job {} doesn't exist", jobId);
+            return;
+        }
+
+        if(this.jobExists(jobId) == true) {
+            log.error("Job Directory for Job {} already exists", jobId);
+            return;
+        }
+
+        // Taken from: https://stackoverflow.com/questions/9324933/what-is-a-good-java-library-to-zip-unzip-files
+        String jobDirectory = JobStringConstants.getJobsDir() + "/"
+                + JobStringConstants.getCustomerProjectJobDir() + jobId + "/";
+
+        try {
+            ZipFile zipFile = new ZipFile(jobFile.getPath());
+            zipFile.extractAll(jobDirectory);
+        } catch (ZipException e) {
+            log.error("Cannot open ZIP file for Job {}", jobId);
+            return;
+        }
+
+        log.info("Unzipping ZIP file for Job {} COMPLETE", jobId);
+    }
+
+    private boolean jobExists(Long jobId) {
+
+        String jobConfigFilePath = JobStringConstants.getJobsDir() + "/"
+                + JobStringConstants.getCustomerProjectJobDir() + jobId + "/"
+                + JobStringConstants.getJobConfigFile();
+        File configFile = new File(jobConfigFilePath);
+
+        if(configFile.exists()) {
+            return true;
+        }
+
+        return false;
     }
 }

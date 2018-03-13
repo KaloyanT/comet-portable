@@ -15,6 +15,7 @@ import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 
+import java.io.File;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -42,6 +43,7 @@ public class CometShell {
     @ShellMethod("Runs the specified Job and returns the results in the specified way")
     public void run(@ShellOption(value = {"-j", "--job-id"}) Long jobId,
                     @ShellOption(value = {"-i", "--import-results"}, help = "Import the results to COMET") boolean importResults,
+                    @ShellOption(value = {"-l", "--local-env"}, help = "Runs the tests on this system") boolean localEnvironment,
                     @ShellOption(value = {"-c", "--comet-instance"}, defaultValue = "0") Long cometInstance) {
 
         Job job = cometShellUtil.createJob(jobId);
@@ -54,6 +56,10 @@ public class CometShell {
         // immediately after Job completion, only save them to a file
         if(importResults == false) {
             job.setImportTestResultsOnJobCompletion(false);
+        }
+
+        if(localEnvironment == true) {
+            job.setLocalEnvironment(true);
         }
 
         // create Execution based on Job
@@ -82,8 +88,7 @@ public class CometShell {
 
     @ShellMethod("Prints the results for a given Job and/or imports them to a COMET Instance")
     public String res(@ShellOption(value = {"-j", "--job-id"}) Long jobId,
-                      @ShellOption(value = {"-p", "--print"}) boolean printResults,
-                      @ShellOption(value = {"-m", "--message"}, help = "Prints the Executor Message") boolean printMesssage,
+                      @ShellOption(value = {"-m", "--message"}, help = "Prints the Executor Message") boolean printMessage,
                       @ShellOption(value = {"-i", "--import-results"}) boolean importResults,
                       @ShellOption(value = {"-c", "--comet-instance"}, defaultValue =  "0") Long cometInstance) {
 
@@ -95,21 +100,20 @@ public class CometShell {
 
         StringBuilder res = new StringBuilder();
 
-        if(printResults == true) {
-            res.append("Connection Test: ");
-            res.append(jobResult.getItems().get(0).getType());
-            res.append("\n");
+        res.append("Connection Test: ");
+        res.append(jobResult.getItems().get(0).getType());
+        res.append("\n");
 
-            res.append("InSpec Profile Check: ");
-            res.append(jobResult.getItems().get(1).getType());
-            res.append("\n");
+        res.append("InSpec Profile Check: ");
+        res.append(jobResult.getItems().get(1).getType());
+        res.append("\n");
 
-            res.append("InSpec Test Result: ");
-            res.append(jobResult.getItems().get(2).getType());
-            res.append("\n");
-        }
+        res.append("InSpec Test Result: ");
+        res.append(jobResult.getItems().get(2).getType());
+        res.append("\n");
 
-        if(printMesssage == true) {
+
+        if(printMessage == true) {
             res.append("InSpec Profile Check Executor Message: ");
             res.append(jobResult.getItems().get(1).getExecutor_message());
             res.append("\n");
@@ -135,6 +139,13 @@ public class CometShell {
     public void download(@ShellOption(value = {"-j", "--job-id"}) Long jobId,
                          @ShellOption(value = {"-c", "--comet-instance"}, defaultValue =  "0") Long cometInstance) {
 
-        log.error("Job {} doesn't exist at COMET instance {}", jobId, cometInstance);
+        File jobFile = cometService.downloadJobAsZIP(jobId);
+
+        if(jobFile == null) {
+            log.error("Job {} doesn't exist at COMET instance {} or no connection to COMET", jobId, cometInstance);
+            return;
+        }
+
+        cometShellUtil.unzipJobFiles(jobId, jobFile);
     }
 }

@@ -3,6 +3,12 @@ package de.cmt.cometportable.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.cmt.cometportable.test.domain.Job;
+import de.cmt.cometportable.test.domain.JobStringConstants;
+import org.apache.commons.io.FileUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +26,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import javax.annotation.PostConstruct;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -61,7 +69,7 @@ public class CometService {
     }
 
     // Run every hour in order to refresh Token/Cookie
-    @Scheduled(cron = "0 0 0/1 * * ?")
+    @Scheduled(cron = "0 0 * * * ?")
     private void authenticate() {
 
         log.debug("Trying to authenticate with COMET");
@@ -148,7 +156,7 @@ public class CometService {
 
     public void importJobResults(Job job) {
 
-        log.info("Request to import the test results for Job {}", job.getId());
+        log.info("Importing the test results for Job {}", job.getId());
 
         if(JSSESIONID == null || JSSESIONID.isEmpty()) {
             log.error("No JSSESIONID available. Can't connect to COMET");
@@ -191,4 +199,56 @@ public class CometService {
         log.info("Import of test results COMPLETE");
     }
 
+    public File downloadJobAsZIP(Long jobId) {
+
+        log.info("Downloading Job {} as ZIP", jobId);
+
+        if(JSSESIONID == null || JSSESIONID.isEmpty()) {
+            log.error("No JSSESIONID available. Can't connect to COMET");
+            return null;
+        }
+
+        // Taken from: https://stackoverflow.com/questions/35995431/how-to-specify-user-agent-and-referer-in-fileutils-copyurltofileurl-file-meth
+        String url = "http://localhost:8080/api/job/" + jobId + "/export/zip";
+        String fileName = JobStringConstants.getDownloadsDir() + "/"
+                + JobStringConstants.getCustomerProjectJobDir() + jobId + ".zip";
+
+        File jobFile = new File(fileName);
+
+        if(jobFile.exists()) {
+            log.error("Job {} is already downloaded", jobId);
+            return jobFile;
+        }
+
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+
+        HttpGet httpGet = new HttpGet(url);
+        httpGet.addHeader(HttpHeaders.COOKIE, JSSESIONID);
+        boolean downloadSuccessful = true;
+
+        try {
+            CloseableHttpResponse httpResponse = httpClient.execute(httpGet);
+            org.apache.http.HttpEntity httpEntity = httpResponse.getEntity();
+
+            if(httpEntity != null && httpResponse.getStatusLine().getStatusCode() == HttpStatus.OK.value()) {
+                FileUtils.copyInputStreamToFile(httpEntity.getContent(), jobFile);
+            } else {
+                downloadSuccessful = false;
+            }
+
+        } catch (IOException e) {
+            log.error("Cannot download Job {}", jobId);
+            downloadSuccessful = false;
+        } finally {
+            httpGet.releaseConnection();
+        }
+
+        if(downloadSuccessful == false) {
+            return null;
+        }
+
+        log.info("Downloading Job {} as ZIP COMPLETE", jobId);
+
+        return jobFile;
+    }
 }

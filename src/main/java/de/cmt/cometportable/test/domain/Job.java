@@ -39,6 +39,8 @@ public class Job implements Serializable {
 
     private JobType type;
 
+    private String title;
+
     private String environment_address;
 
     private EnvironmentType environment_type = EnvironmentType.LOCAL;
@@ -47,14 +49,14 @@ public class Job implements Serializable {
 
     private boolean linkedEnvironment = true;
 
+    private boolean localEnvironment = false;
+
     private boolean importTestResultsOnJobCompletion = true;
 
     public boolean isLinkedEnvironment() {
         // return linkedEnvironment;
         return this.getEnvironmentAddress() == null;
     }
-
-    private String title;
 
     public String getTitle() {
         return title;
@@ -133,17 +135,23 @@ public class Job implements Serializable {
         return environments;
     }
 
-    public boolean getImportTestResultsOnJobCompletion() {
-        return importTestResultsOnJobCompletion;
-    }
-
     public void setEnvironments(List<Environment> environments) {
         this.environments = environments;
     }
 
-
+    public boolean getImportTestResultsOnJobCompletion() {
+        return importTestResultsOnJobCompletion;
+    }
 
     public void setImportTestResultsOnJobCompletion(boolean importTestResultsOnJobCompletion) {
         this.importTestResultsOnJobCompletion = importTestResultsOnJobCompletion;
+    }
+
+    public boolean isLocalEnvironment() {
+        return localEnvironment;
+    }
+
+    public void setLocalEnvironment(boolean localEnvironment) {
+        this.localEnvironment = localEnvironment;
     }
 }
