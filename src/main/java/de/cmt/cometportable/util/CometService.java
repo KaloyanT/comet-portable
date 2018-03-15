@@ -12,6 +12,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -37,23 +38,36 @@ public class CometService {
 
     private final Logger log = LoggerFactory.getLogger(CometService.class);
 
+    @Value("${comet.url}")
+    private String COMET_URL;
+
+    @Value("${comet.port}")
+    private String COMET_PORT;
+
+    private static String COMET_ADDRESS;
+
+    @Value("${comet.authentication.endpoint}")
+    private String COMET_AUTHENTICATION_ENDPOINT;
+
     private final static String usernameField = "j_username";
 
-    private final static String usernameFieldValue = "admin";
+    @Value("${comet.authentication.username}")
+    private String usernameFieldValue;
 
     private final static String passwordField = "j_password";
 
-    private final static String passwordFieldValue = "admin";
+    @Value("${comet.authentication.password}")
+    private String passwordFieldValue;
 
     private final static String rememberMeField = "remember-me";
 
-    private final static String rememberMeFieldValue = "undefined";
+    @Value("${comet.authentication.remember-me}")
+    private String rememberMeFieldValue;
 
     private final static String submitField = "submit";
 
-    private final static String submitFieldValue = "Login";
-
-    private final static String authenticationUrl = "http://localhost:8080/api/authentication";
+    @Value("${comet.authentication.submit}")
+    private String submitFieldValue;
 
     private static String JSSESIONID;
 
@@ -65,6 +79,7 @@ public class CometService {
     @PostConstruct
     private void init() {
         // Establish connection to COMET
+        COMET_ADDRESS = COMET_URL + ":" + COMET_PORT;
         this.authenticate();
     }
 
@@ -89,6 +104,8 @@ public class CometService {
         RestTemplate restTemplate = new RestTemplate();
 
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(loginMap, headers);
+
+        String authenticationUrl = COMET_ADDRESS + COMET_AUTHENTICATION_ENDPOINT;
 
         try {
             response = restTemplate.exchange(authenticationUrl, HttpMethod.POST, entity, String.class);
@@ -129,7 +146,7 @@ public class CometService {
 
         RestTemplate restTemplate = new RestTemplate();
         List<ObjectNode> exportedJobsList = null;
-        final String url = "http://localhost:8080/api/job/get/exported";
+        final String url = COMET_ADDRESS + "/api/job/get/exported";
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
         ResponseEntity<ObjectNode[]> response;
@@ -173,7 +190,7 @@ public class CometService {
         headers.add(HttpHeaders.COOKIE, JSSESIONID);
 
         RestTemplate restTemplate = new RestTemplate();
-        final String url = "http://localhost:8080/api/job/" + job.getId() + "/import/test-results";
+        final String url = COMET_ADDRESS + "/api/job/" + job.getId() + "/import/test-results";
 
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode json = mapper.valueToTree(job.getResult());
@@ -209,7 +226,7 @@ public class CometService {
         }
 
         // Taken from: https://stackoverflow.com/questions/35995431/how-to-specify-user-agent-and-referer-in-fileutils-copyurltofileurl-file-meth
-        String url = "http://localhost:8080/api/job/" + jobId + "/export/zip";
+        String url = COMET_ADDRESS + "/api/job/" + jobId + "/export/zip";
         String fileName = JobStringConstants.getDownloadsDir() + "/"
                 + JobStringConstants.getCustomerProjectJobDir() + jobId + ".zip";
 
