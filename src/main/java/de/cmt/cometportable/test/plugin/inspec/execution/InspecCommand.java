@@ -139,7 +139,7 @@ public class InspecCommand extends CommandLine {
                     .concat(environment.getHost());
 
             this.addArgument("-i");
-            this.addArgument( environment.getKeyFile() );
+            this.addArgument(environment.getKeyFile());
         }
 
         this.addArgument("-t");
@@ -164,7 +164,7 @@ public class InspecCommand extends CommandLine {
 
     protected InspecCommand addFormatArgument(String format) {
         this.addArgument("--format");
-        this.addArgument( format );
+        this.addArgument(format);
         return this;
     }
 

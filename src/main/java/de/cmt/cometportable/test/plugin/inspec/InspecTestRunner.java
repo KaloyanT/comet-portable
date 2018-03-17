@@ -9,6 +9,7 @@ import de.cmt.cometportable.test.domain.ResultType;
 import de.cmt.cometportable.test.plugin.inspec.evaluation.InspecEvaluate;
 import de.cmt.cometportable.test.plugin.inspec.execution.InspecCommand;
 import de.cmt.cometportable.test.plugin.inspec.execution.InspecOutput;
+import de.cmt.cometportable.util.SSHConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
@@ -101,24 +102,24 @@ public class InspecTestRunner implements TestRunner {
         Environment env = new Environment();
         boolean reachable = true; // default if we have local:// or docker://
 
-        /*
+
         if(this.job.isLinkedEnvironment()) {
             // TODO: handle this correctly or build back the possibility that
             // one can run artifacts in general
-            CustomerProject pro = (CustomerProject) this.job.getArtifact();
-            if(pro.hasEnvironments()) {
-                for(Environment lEnv : pro.getEnvironments()) {
+            List<Environment> environments = this.job.getEnvironments();
+
+            for(Environment lEnv : environments) {
                     SSHConnection ssh = new SSHConnection(lEnv);
                     reachable &= ssh.hasValidAuthentication();
-                }
+
             }
 
-        } else if(this.job.getEnvironmentType() == EnvironmentType.SSH) {
+        } else if(this.job.getEnvironmentType() == Job.EnvironmentType.SSH) {
             env.setHost(this.job.getEnvironmentAddress());
             SSHConnection ssh = new SSHConnection(env);
             reachable = ssh.isHostReachable();
         }
-        */
+
 
         this.addJobResultItem(
                 "Connectivity Test",
