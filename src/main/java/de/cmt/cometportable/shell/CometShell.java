@@ -2,6 +2,8 @@ package de.cmt.cometportable.shell;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.cmt.cometportable.adaptation.ComplianceExecution;
+import de.cmt.cometportable.test.domain.Environment;
+import de.cmt.cometportable.test.domain.EnvironmentAuthenticationType;
 import de.cmt.cometportable.test.domain.Job;
 import de.cmt.cometportable.test.domain.JobResult;
 import de.cmt.cometportable.test.domain.JobResultItem;
@@ -44,9 +46,12 @@ public class CometShell {
     public void run(@ShellOption(value = {"-j", "--job-id"}) Long jobId,
                     @ShellOption(value = {"-i", "--import-results"}, help = "Import the results to COMET") boolean importResults,
                     @ShellOption(value = {"-l", "--local-env"}, help = "Runs the tests on this system") boolean localEnvironment,
+                    @ShellOption(value = {"-k", "--key-file"}, defaultValue = "",help = "SSH Key File") String sshKeyFile,
                     @ShellOption(value = {"-c", "--comet-instance"}, defaultValue = "0") Long cometInstance) {
 
         Job job = cometShellUtil.createJob(jobId);
+
+        log.info(sshKeyFile);
 
         if(job == null) {
             return;
@@ -59,7 +64,17 @@ public class CometShell {
         }
 
         if(localEnvironment == true) {
+            log.info("Local is true");
             job.setLocalEnvironment(true);
+
+        // Handle the other environments too
+        } else if(job.getEnvironments().get(0).getAuthenticationType() == EnvironmentAuthenticationType.KEY && sshKeyFile != null && !sshKeyFile.isEmpty()) {
+            log.info("Key is true");
+            List<Environment> environments = job.getEnvironments();
+            Environment env = environments.get(0);
+            env.setKeyFile(sshKeyFile);
+            environments.set(0, env);
+            job.setEnvironments(environments);
         }
 
         // create Execution based on Job

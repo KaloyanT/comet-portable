@@ -71,7 +71,7 @@ public class CometShellUtil {
 
         String resultsFilePath = JobStringConstants.getJobsDir() + "/"
                 + JobStringConstants.getCustomerProjectJobDir() + jobId + "/"
-                + JobStringConstants.getJobResultFile();
+                + String.format(JobStringConstants.getJobResultFile(), jobId);
         File resultsFile = new File(resultsFilePath);
 
         if(!resultsFile.exists()) {
@@ -101,7 +101,7 @@ public class CometShellUtil {
 
         String jobResultFile = JobStringConstants.getJobsDir() + "/"
                 + JobStringConstants.getCustomerProjectJobDir() + job.getId() + "/"
-                + JobStringConstants.getJobResultFile();
+                + String.format(JobStringConstants.getJobResultFile(), job.getId());
 
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode jobResult = mapper.valueToTree(job.getResult());

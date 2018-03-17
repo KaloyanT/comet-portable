@@ -23,7 +23,7 @@ public class InspecCommand extends CommandLine {
 
     protected Executor executor = new DefaultExecutor();
 
-    protected Map<Job.EnvironmentType, String> envProtocol = new HashMap<>();
+    protected Map<EnvironmentType, String> envProtocol = new HashMap<>();
 
     // https://stackoverflow.com/questions/37116062/error-trying-to-open-cmd-using-apache-commons-exec-jar
     // On Windows one has to insert "cmd.exe /c" before the actual command. Apache Commons Exec doesn't do

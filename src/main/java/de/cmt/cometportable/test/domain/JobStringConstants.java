@@ -10,7 +10,7 @@ public class JobStringConstants {
 
     private final static String JOB_CONFIG_FILE = "job.json";
 
-    private final static String JOB_RESULT_FILE = "result.json";
+    private final static String JOB_RESULT_FILE = "result.%d.json";
 
     public static String getJobsDir() {
         return JOBS_DIR;

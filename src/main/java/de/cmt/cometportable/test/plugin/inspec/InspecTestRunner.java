@@ -103,7 +103,7 @@ public class InspecTestRunner implements TestRunner {
         boolean reachable = true; // default if we have local:// or docker://
 
 
-        if(this.job.isLinkedEnvironment()) {
+        if(this.job.isLinkedEnvironment() && this.job.isLocalEnvironment() == false) {
             // TODO: handle this correctly or build back the possibility that
             // one can run artifacts in general
             List<Environment> environments = this.job.getEnvironments();
