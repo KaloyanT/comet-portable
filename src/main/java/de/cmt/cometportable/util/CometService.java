@@ -85,9 +85,9 @@ public class CometService {
 
     // Run every hour in order to refresh Token/Cookie
     @Scheduled(cron = "0 0 * * * ?")
-    private void authenticate() {
+    public void authenticate() {
 
-        log.debug("Trying to authenticate with COMET");
+        log.info("Trying to authenticate with COMET");
 
         ResponseEntity<String> response;
 
@@ -128,7 +128,7 @@ public class CometService {
             }
         }
 
-        log.debug("Authentication attempt with COMET COMPLETE");
+        log.info("Authentication attempt with COMET COMPLETE");
 
     }
 

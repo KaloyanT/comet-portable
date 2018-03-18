@@ -163,4 +163,9 @@ public class CometShell {
 
         cometShellUtil.unzipJobFiles(jobId, jobFile);
     }
+
+    @ShellMethod("Performs a manual authorization with a COMET Instance")
+    public void authenticate(@ShellOption(value = {"-c", "--comet-instance"}, defaultValue =  "0") Long cometInstance) {
+        cometService.authenticate();
+    }
 }
