@@ -12,7 +12,7 @@ public class Job implements Serializable {
         QUEUED,			// queued in thread pool
         RUNNING,		// currently running
         FINISHED,		// job finished
-        EXPORTED
+        EXPORTED        // job is exported. waiting for the job results
     }
 
     public enum JobType {
