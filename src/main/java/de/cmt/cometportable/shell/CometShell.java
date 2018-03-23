@@ -6,9 +6,9 @@ import de.cmt.cometportable.test.domain.Environment;
 import de.cmt.cometportable.test.domain.EnvironmentAuthenticationType;
 import de.cmt.cometportable.test.domain.Job;
 import de.cmt.cometportable.test.domain.JobResult;
-import de.cmt.cometportable.test.domain.JobResultItem;
 import de.cmt.cometportable.util.CometService;
 import de.cmt.cometportable.util.CometShellUtil;
+import de.cmt.cometportable.util.JobMonitoringService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,6 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
-
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -35,6 +34,9 @@ public class CometShell {
 
     @Autowired
     private CometShellUtil cometShellUtil;
+
+    @Autowired
+    private JobMonitoringService jobMonitoringService;
 
     private final Executor taskExecutor;
 
@@ -64,12 +66,10 @@ public class CometShell {
         }
 
         if(localEnvironment == true) {
-            log.info("Local is true");
             job.setLocalEnvironment(true);
 
         // Handle the other environments too
         } else if(job.getEnvironments().get(0).getAuthenticationType() == EnvironmentAuthenticationType.KEY && sshKeyFile != null && !sshKeyFile.isEmpty()) {
-            log.info("Key is true");
             List<Environment> environments = job.getEnvironments();
             Environment env = environments.get(0);
             env.setKeyFile(sshKeyFile);
@@ -89,16 +89,39 @@ public class CometShell {
     }
 
     @ShellMethod("Lists all Jobs that are Exported by COMET")
-    public String list(@ShellOption(value = {"-c", "--comet-instance"}, defaultValue = "0") Long cometInstance) {
+    public String list(@ShellOption(value = {"-d", "--downloaded-jobs"}) boolean downloadedJobs,
+                       @ShellOption(value = {"-r", "--running-jobs"}) boolean runningJobs,
+                       @ShellOption(value = {"-f", "--finished-jobs"}) boolean finishedJobs,
+                       @ShellOption(value = {"-c", "--comet-instance"}, defaultValue = "0") Long cometInstance) {
 
-        List<ObjectNode> exportedJobs = this.cometService.getExportedJobs();
+        String res = null;
 
-        if(exportedJobs == null) {
-            log.error("Cannot list exported Jobs. No connection to COMET");
-            return null;
+        if(downloadedJobs == true) {
+
+            res = this.cometShellUtil.listJobsFromJobMonitoringService(this.jobMonitoringService.getDownloadedJobs());
+
+        } else if(runningJobs == true) {
+
+            res = this.cometShellUtil.listJobsFromJobMonitoringService(this.jobMonitoringService.getRunningJobs());
+
+        } else if(finishedJobs == true) {
+
+            res = this.cometShellUtil.listJobsFromJobMonitoringService(this.jobMonitoringService.getFinishedJobs());
+
+        } else {
+
+            List<ObjectNode> exportedJobs = this.cometService.getExportedJobs();
+
+            if(exportedJobs == null) {
+                log.error("Cannot list exported Jobs. No connection to COMET");
+                return null;
+            }
+
+            res = cometShellUtil.listExportedJobs(exportedJobs);
         }
 
-        return cometShellUtil.listExportedJobs(exportedJobs);
+        return res;
+
     }
 
     @ShellMethod("Prints the results for a given Job and/or imports them to a COMET Instance")

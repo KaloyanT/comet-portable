@@ -6,6 +6,7 @@ import de.cmt.cometportable.test.domain.Job.JobState;
 import de.cmt.cometportable.test.plugin.TestRunnerFactory;
 import de.cmt.cometportable.util.CometService;
 import de.cmt.cometportable.util.CometShellUtil;
+import de.cmt.cometportable.util.JobMonitoringService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
@@ -17,6 +18,9 @@ public class ComplianceExecution extends ComplianceRun {
 
     @Autowired
     private CometService cometService;
+
+    @Autowired
+    private JobMonitoringService jobMonitoringService;
 
     public ComplianceExecution(Job job) {
         super(job);
@@ -49,6 +53,18 @@ public class ComplianceExecution extends ComplianceRun {
         this.job.setState(JobState.RUNNING);
 
         File exportDestination = this.setExportFolder(this.job);
+
+        if(this.jobMonitoringService.getRunningJobs().contains(exportDestination.toString())){
+            log.error("Job {} is already running!", this.job.getId());
+            return;
+
+        } else if(this.jobMonitoringService.getFinishedJobs().contains(exportDestination.toString())) {
+            log.error("Job {} has already finished!", this.job.getId());
+            return;
+        }
+
+        this.jobMonitoringService.addRunningJob(exportDestination.toString());
+
         TestRunner runner = TestRunnerFactory.getRunner();
 
         // No PlaceHolderResolver is needed here since the test files are already created
@@ -58,6 +74,9 @@ public class ComplianceExecution extends ComplianceRun {
         // update job properties
         this.job.setResult(runner.getResult());
         this.job.setState(JobState.FINISHED);
+
+        this.jobMonitoringService.removeRunningJob(exportDestination.toString());
+        this.jobMonitoringService.addFinishedJob(exportDestination.toString());
 
         this.cometShellUtil.saveJobResults(this.job);
 

@@ -39,6 +39,23 @@ public class CometShellUtil {
         return stringBuilder.toString();
     }
 
+    public String listJobsFromJobMonitoringService(List<String> jobs) {
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for(int i = 0; i < jobs.size(); i++) {
+
+            // Each entry will be in the form jobs/de.cmt.domain.entity.artifact.CustomerProject.job.xxxx.
+            // Use split to get only the ID
+            String id = jobs.get(i).split(".job.")[1];
+            stringBuilder.append("Job ");
+            stringBuilder.append(id);
+            stringBuilder.append((i == jobs.size() - 1) ? "" : "\n");
+        }
+
+        return stringBuilder.toString();
+    }
+
     public Job createJob(Long jobId) {
 
         log.info("Reading configuration for Job {}", jobId);

@@ -2,7 +2,6 @@ package de.cmt.cometportable.test.plugin.inspec.execution;
 
 import de.cmt.cometportable.test.domain.Environment;
 import de.cmt.cometportable.test.domain.EnvironmentAuthenticationType;
-import de.cmt.cometportable.test.domain.Job;
 import de.cmt.cometportable.test.domain.Job.EnvironmentType;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
