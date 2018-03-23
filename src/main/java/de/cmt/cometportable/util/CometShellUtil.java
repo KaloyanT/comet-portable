@@ -150,7 +150,7 @@ public class CometShellUtil {
 
         // Taken from: https://stackoverflow.com/questions/9324933/what-is-a-good-java-library-to-zip-unzip-files
         String jobDirectory = JobStringConstants.getJobsDir() + "/"
-                + JobStringConstants.getCustomerProjectJobDir() + jobId + "/";
+                + JobStringConstants.getCustomerProjectJobDir() + jobId;
 
         try {
             ZipFile zipFile = new ZipFile(jobFile.getPath());

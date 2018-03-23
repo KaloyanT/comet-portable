@@ -6,6 +6,7 @@ import de.cmt.cometportable.test.domain.Environment;
 import de.cmt.cometportable.test.domain.EnvironmentAuthenticationType;
 import de.cmt.cometportable.test.domain.Job;
 import de.cmt.cometportable.test.domain.JobResult;
+import de.cmt.cometportable.test.domain.JobStringConstants;
 import de.cmt.cometportable.util.CometService;
 import de.cmt.cometportable.util.CometShellUtil;
 import de.cmt.cometportable.util.JobMonitoringService;
@@ -185,6 +186,9 @@ public class CometShell {
         }
 
         cometShellUtil.unzipJobFiles(jobId, jobFile);
+
+        this.jobMonitoringService.addDownloadedJob(JobStringConstants.getJobsDir() + "/"
+                + JobStringConstants.getCustomerProjectJobDir() + jobId);
     }
 
     @ShellMethod("Performs a manual authorization with a COMET Instance")

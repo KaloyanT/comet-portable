@@ -32,6 +32,12 @@ public class JobMonitoringService {
         this.runningJobs = new ArrayList<>();
         this.finishedJobs = new ArrayList<>();
 
+        this.updateJobsLists();
+
+    }
+
+    private void updateJobsLists() {
+
         Path path = Paths.get(JobStringConstants.getJobsDir());
         Stream<Path> dirs = null;
 
@@ -52,7 +58,6 @@ public class JobMonitoringService {
                 this.addFinishedJob(e.toString());
             }
         });
-
     }
 
     public List<String> getDownloadedJobs() {
