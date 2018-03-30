@@ -1,5 +1,7 @@
 package de.cmt.cometportable.test.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
@@ -14,6 +16,9 @@ public class JobResult implements Serializable {
     private ResultType type;
 
     private List<JobResultItem> items;
+
+    @JsonIgnore
+    private Job job;
 
     public JobResult() {
         this.items = new ArrayList<>();
@@ -53,6 +58,13 @@ public class JobResult implements Serializable {
         }
     }
 
+    public Job getJob() {
+        return job;
+    }
+
+    public void setJob(Job job) {
+        this.job = job;
+    }
 }
 
 

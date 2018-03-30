@@ -27,11 +27,13 @@ public class InspecTestRunner implements TestRunner {
 
     private File exportDestination;
 
-    private JobResult result;
+    private List<JobResult> results;
+
+    private int environmentCount;
 
     @Override
-    public JobResult getResult() {
-        return this.result;
+    public List<JobResult> getResults() {
+        return this.results;
     }
 
     @Override
@@ -41,10 +43,17 @@ public class InspecTestRunner implements TestRunner {
     }
 
     @Override
-    public JobResult execute(Job job) {
+    public List<JobResult> execute(Job job) {
 
         this.job = job;
-        this.result = new JobResult();
+        this.results = new ArrayList<>();
+
+        this.environmentCount = this.job.getEnvironments().size();
+
+        for(int i = 0; i < environmentCount; i++) {
+            JobResult temp = new JobResult();
+            this.results.add(temp);
+        }
 
         // check correct state of class
         if(this.exportDestination == null) {
@@ -55,7 +64,7 @@ public class InspecTestRunner implements TestRunner {
         this.generateTestCode();
         this.executeTests();
 
-        return this.result;
+        return this.results;
     }
 
     private void generateTestCode() {
@@ -74,7 +83,10 @@ public class InspecTestRunner implements TestRunner {
         InspecOutput inspecResult = inspec.check(exportDestination);
         InspecEvaluate inspecJson = new InspecEvaluate(String.join(" ", inspecResult.getLines()));
 
-        this.addJobResultItem(inspec.getCommandString(), inspecResult.getLines(), inspecJson.getResult());
+        for(int i = 0; i < this.environmentCount; i++) {
+            this.addJobResultItem(inspec.getCommandString(), inspecResult.getLines(), inspecJson.getResult(), i);
+        }
+
     }
 
     private void inspecTestProfile() {
@@ -82,18 +94,34 @@ public class InspecTestRunner implements TestRunner {
         InspecCommand inspec = this.getInspecCommandRunner();
         InspecOutput inspecResult;
 
+        boolean multipleEnvironments = false;
+
+        int i = 0;
+
         if(this.job.isLocalEnvironment()) {
             inspecResult = inspec.test(this.exportDestination);
+
         } else {
-            // TODO not only take first ...
-            Environment env = this.job.getEnvironments().get(0);
-            inspecResult = inspec.test(this.exportDestination, env);
+
+            multipleEnvironments = true;
+            // There is always at least 1 Environment
+            do {
+                Environment env = this.job.getEnvironments().get(i);
+                inspecResult = inspec.test(this.exportDestination, env);
+                InspecEvaluate inspecJson = new InspecEvaluate(String.join(" ", inspecResult.getLines()));
+                this.addJobResultItem(inspec.getCommandString(), inspecResult.getLines(), inspecJson.getResult(), i);
+                i++;
+            } while (i < this.environmentCount);
         }
 
         InspecEvaluate inspecJson = new InspecEvaluate(String.join(" ", inspecResult.getLines()));
 
         this.log.info("Evaluated InSpec Exec - Result {}", inspecJson.getResult().toString());
-        this.addJobResultItem(inspec.getCommandString(), inspecResult.getLines(), inspecJson.getResult());
+
+        if(multipleEnvironments == false) {
+            this.addJobResultItem(inspec.getCommandString(), inspecResult.getLines(), inspecJson.getResult(), 0);
+        }
+
 
     }
 
@@ -102,41 +130,51 @@ public class InspecTestRunner implements TestRunner {
         Environment env = new Environment();
         boolean reachable = true; // default if we have local:// or docker://
 
-
         if(this.job.isLinkedEnvironment() && this.job.isLocalEnvironment() == false) {
             // TODO: handle this correctly or build back the possibility that
             // one can run artifacts in general
             List<Environment> environments = this.job.getEnvironments();
-
+            int index = 0;
             for(Environment lEnv : environments) {
-                    SSHConnection ssh = new SSHConnection(lEnv);
-                    reachable &= ssh.hasValidAuthentication();
+                SSHConnection ssh = new SSHConnection(lEnv);
+                reachable &= ssh.hasValidAuthentication();
 
+                this.addJobResultItem(
+                        "Connectivity Test",
+                        new ArrayList<>(),
+                        (reachable) ? ResultType.VALID : ResultType.INVALID,
+                        index
+                );
+
+                index++;
             }
 
         } else if(this.job.getEnvironmentType() == Job.EnvironmentType.SSH) {
             env.setHost(this.job.getEnvironmentAddress());
             SSHConnection ssh = new SSHConnection(env);
             reachable = ssh.isHostReachable();
+
+            this.addJobResultItem(
+                    "Connectivity Test",
+                    new ArrayList<>(),
+                    (reachable) ? ResultType.VALID : ResultType.INVALID,
+                    0
+            );
         }
 
-
-        this.addJobResultItem(
-                "Connectivity Test",
-                new ArrayList<>(),
-                (reachable) ? ResultType.VALID : ResultType.INVALID
-        );
     }
 
-    private void addJobResultItem(String executor, List<String> messages, ResultType type) {
+    private void addJobResultItem(String executor, List<String> messages, ResultType type, int jobResultIndex) {
 
+        JobResult jobResult = this.results.get(jobResultIndex);
         JobResultItem item = new JobResultItem();
-        item.setJobResult(this.result);
+        item.setJobResult(jobResult);
         item.setExecutor(executor);
         item.setExecutor_message(String.join("\n\r", messages));
         item.setType(type);
 
-        this.result.addItem(item);
+        jobResult.addItem(item);
+        this.results.set(jobResultIndex, jobResult);
     }
 
     private InspecCommand getInspecCommandRunner() {

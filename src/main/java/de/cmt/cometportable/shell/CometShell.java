@@ -131,42 +131,45 @@ public class CometShell {
                       @ShellOption(value = {"-i", "--import-results"}) boolean importResults,
                       @ShellOption(value = {"-c", "--comet-instance"}, defaultValue =  "0") Long cometInstance) {
 
-        JobResult jobResult = cometShellUtil.getJobResult(jobId);
+        List<JobResult> jobResults = cometShellUtil.getJobResults(jobId);
 
-        if(jobResult == null || jobResult.getItems().size() < 3) {
+        if(jobResults == null) {
             return null;
         }
 
         StringBuilder res = new StringBuilder();
 
-        res.append("Connection Test: ");
-        res.append(jobResult.getItems().get(0).getType());
-        res.append("\n");
+        for(JobResult jobResult : jobResults) {
 
-        res.append("InSpec Profile Check: ");
-        res.append(jobResult.getItems().get(1).getType());
-        res.append("\n");
-
-        res.append("InSpec Test Result: ");
-        res.append(jobResult.getItems().get(2).getType());
-        res.append("\n");
-
-
-        if(printMessage == true) {
-            res.append("InSpec Profile Check Executor Message: ");
-            res.append(jobResult.getItems().get(1).getExecutor_message());
+            res.append("Connection Test: ");
+            res.append(jobResult.getItems().get(0).getType());
             res.append("\n");
 
-            res.append("InSpec Test Result Executor Message: ");
-            res.append(jobResult.getItems().get(2).getExecutor_message());
+            res.append("InSpec Profile Check: ");
+            res.append(jobResult.getItems().get(1).getType());
             res.append("\n");
+
+            res.append("InSpec Test Result: ");
+            res.append(jobResult.getItems().get(2).getType());
+            res.append("\n");
+
+
+            if(printMessage == true) {
+                res.append("InSpec Profile Check Executor Message: ");
+                res.append(jobResult.getItems().get(1).getExecutor_message());
+                res.append("\n");
+
+                res.append("InSpec Test Result Executor Message: ");
+                res.append(jobResult.getItems().get(2).getExecutor_message());
+                res.append("\n");
+            }
         }
 
-        if(importResults == true) {
 
+        if(importResults == true) {
             // Create the Job Object again by reading it's configuration and set its results
             Job job = cometShellUtil.createJob(jobId);
-            job.setResult(jobResult);
+            job.setResults(jobResults);
             job.setState(Job.JobState.FINISHED);
             cometService.importJobResults(job);
         }

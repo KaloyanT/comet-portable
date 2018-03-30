@@ -1,6 +1,7 @@
 package de.cmt.cometportable.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.cmt.cometportable.test.domain.Job;
 import de.cmt.cometportable.test.domain.JobStringConstants;
@@ -180,7 +181,7 @@ public class CometService {
             return;
         }
 
-        if(job.getResult() == null | job.getResult().getItems().isEmpty()) {
+        if(job.getResults() == null | job.getResults().isEmpty()) {
             log.error("Invalid Job Results for Job {}", job.getId());
             return;
         }
@@ -193,7 +194,7 @@ public class CometService {
         final String url = COMET_ADDRESS + "/api/job/" + job.getId() + "/import/test-results";
 
         ObjectMapper mapper = new ObjectMapper();
-        ObjectNode json = mapper.valueToTree(job.getResult());
+        ArrayNode json = mapper.valueToTree(job.getResults());
 
         HttpEntity<String> entity = new HttpEntity<>(json.toString(), headers);
         ResponseEntity<String> response;

@@ -1,5 +1,6 @@
 package de.cmt.cometportable.util;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -82,37 +84,37 @@ public class CometShellUtil {
         return job;
     }
 
-    public JobResult getJobResult(Long jobId) {
+    public List<JobResult> getJobResults(Long jobId) {
 
         log.info("Reading results for Job {}", jobId);
 
         String resultsFilePath = JobStringConstants.getJobsDir() + "/"
                 + JobStringConstants.getCustomerProjectJobDir() + jobId + "/"
                 + String.format(JobStringConstants.getJobResultFile(), jobId);
-        File resultsFile = new File(resultsFilePath);
+        File jobResultsFile = new File(resultsFilePath);
 
-        if(!resultsFile.exists()) {
+        if(!jobResultsFile.exists()) {
             log.error("Results for Job {} don't exist!", jobId);
             return null;
         }
 
         ObjectMapper mapper = new ObjectMapper();
-        JobResult jobResult = null;
+        List<JobResult> jobResults = null;
 
         try {
-            jobResult = mapper.readValue(resultsFile, JobResult.class);
+            jobResults = Arrays.asList(mapper.readValue(jobResultsFile, JobResult[].class));
         } catch (IOException e) {
             log.error("Invalid Results file for Job {}", jobId);
         }
 
-        return jobResult;
+        return jobResults;
     }
 
     public void saveJobResults(Job job) {
 
         log.info("Saving Job results for Job {} to file", job.getId());
 
-        if(job == null || job.getResult() == null || job.getResult().getItems().isEmpty()) {
+        if(job == null || job.getResults() == null || job.getResults().isEmpty()) {
             return;
         }
 
@@ -121,12 +123,12 @@ public class CometShellUtil {
                 + String.format(JobStringConstants.getJobResultFile(), job.getId());
 
         ObjectMapper mapper = new ObjectMapper();
-        ObjectNode jobResult = mapper.valueToTree(job.getResult());
+        List<JobResult> jobResults = job.getResults();
 
         ObjectWriter writer = mapper.writer(new DefaultPrettyPrinter());
 
         try {
-            writer.writeValue(new File(jobResultFile), jobResult);
+            writer.writeValue(new File(jobResultFile), jobResults);
         } catch (IOException e) {
             log.error(e.getMessage());
         }

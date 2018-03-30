@@ -3,6 +3,7 @@ package de.cmt.cometportable.adaptation;
 import de.cmt.cometportable.test.TestRunner;
 import de.cmt.cometportable.test.domain.Job;
 import de.cmt.cometportable.test.domain.Job.JobState;
+import de.cmt.cometportable.test.domain.JobResult;
 import de.cmt.cometportable.test.plugin.TestRunnerFactory;
 import de.cmt.cometportable.util.CometService;
 import de.cmt.cometportable.util.CometShellUtil;
@@ -10,6 +11,7 @@ import de.cmt.cometportable.util.JobMonitoringService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
+import java.util.List;
 
 public class ComplianceExecution extends ComplianceRun {
 
@@ -72,7 +74,13 @@ public class ComplianceExecution extends ComplianceRun {
         runner.execute(this.job);
 
         // update job properties
-        this.job.setResult(runner.getResult());
+        List<JobResult> jobResultList = runner.getResults();
+
+        for(JobResult jr : jobResultList) {
+            jr.setJob(this.job);
+        }
+
+        this.job.setResults(jobResultList);
         this.job.setState(JobState.FINISHED);
 
         this.jobMonitoringService.removeRunningJob(exportDestination.toString());

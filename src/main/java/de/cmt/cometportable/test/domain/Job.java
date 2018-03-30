@@ -35,7 +35,7 @@ public class Job implements Serializable {
 
     private JobState state;
 
-    private JobResult result;
+    private List<JobResult> results;
 
     private JobType type;
 
@@ -98,12 +98,22 @@ public class Job implements Serializable {
         this.state = state;
     }
 
-    public JobResult getResult() {
-        return result;
+    public List<JobResult> getResults() {
+        return results;
     }
 
-    public void setResult(JobResult result) {
-        this.result = result;
+    public void setResults(List<JobResult> results) {
+        this.results = results;
+    }
+
+    public void addResultItem(JobResult result) {
+        this.results.add(result);
+        result.setJob(this);
+    }
+
+    public void removeResultItem(JobResult result) {
+        this.results.remove(result);
+        result.setJob(null);
     }
 
     public JobType getType() {

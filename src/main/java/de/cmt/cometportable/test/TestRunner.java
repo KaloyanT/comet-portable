@@ -4,6 +4,7 @@ import de.cmt.cometportable.test.domain.Job;
 import de.cmt.cometportable.test.domain.JobResult;
 
 import java.io.File;
+import java.util.List;
 
 public interface TestRunner {
 
@@ -12,9 +13,9 @@ public interface TestRunner {
      */
     public TestRunner setExportDestination(File destination);
 
-    public JobResult execute(Job job);
+    public List<JobResult> execute(Job job);
 
-    public JobResult getResult();
+    public List<JobResult> getResults();
 }
 
 

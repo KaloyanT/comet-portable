@@ -162,7 +162,7 @@ public class InspecCommand extends CommandLine {
     }
 
     protected InspecCommand addFormatArgument(String format) {
-        this.addArgument("--format");
+        this.addArgument("--reporter");
         this.addArgument(format);
         return this;
     }
@@ -185,32 +185,32 @@ public class InspecCommand extends CommandLine {
 
     public InspecCommand addCheckArgument() {
         this.addArgument("check");
-        this.addFormatArgument("json");
+        this.addArgument("--format=json");
         return this;
     }
 
     public InspecOutput test(File profileFolder) {
         this.addExecutionArgument();
+        this.addArgument(profileFolder.getPath());
         this.addFormatArgument();
 
-        this.addArgument(profileFolder.getPath());
         return this.execute();
     }
 
     public InspecOutput test(File profileFolder, EnvironmentType type, String address) {
         this.addExecutionArgument();
+        this.addArgument(profileFolder.getPath());
         this.addEnvironmentArgument(type, address);
         this.addFormatArgument();
-        this.addArgument(profileFolder.getPath());
 
         return this.execute();
     }
 
     public InspecOutput test(File profileFolder, Environment environment) {
         this.addExecutionArgument();
+        this.addArgument(profileFolder.getPath());
         this.addEnvironmentArgument(environment);
         this.addFormatArgument();
-        this.addArgument(profileFolder.getPath());
 
         return this.execute();
     }
