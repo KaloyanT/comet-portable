@@ -160,6 +160,14 @@ public class InspecTestRunner implements TestRunner {
                     (reachable) ? ResultType.VALID : ResultType.INVALID,
                     0
             );
+
+        // The Local Environment, i.e. the system on which COMET-Portable is running, is always reachable
+        } else if(this.job.isLocalEnvironment()) {
+            this.addJobResultItem(
+                    "Connectivity Test",
+                    new ArrayList<>(),
+                    ResultType.VALID,
+                    0);
         }
 
     }
