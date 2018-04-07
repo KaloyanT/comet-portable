@@ -1,6 +1,5 @@
 package de.cmt.cometportable.util;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -15,8 +14,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Component
 public class CometShellUtil {
@@ -70,18 +74,58 @@ public class CometShellUtil {
         String jobConfigFilePath = JobStringConstants.getJobsDir() + "/"
                 + JobStringConstants.getCustomerProjectJobDir() + jobId + "/"
                 + JobStringConstants.getJobConfigFile();
-        File configFile = new File(jobConfigFilePath);
+        Path configFile = Paths.get(jobConfigFilePath);
 
         ObjectMapper mapper = new ObjectMapper();
         Job job = null;
 
         try {
-            job = mapper.readValue(configFile, Job.class);
+            job = mapper.readValue(configFile.toFile(), Job.class);
         } catch (IOException e) {
             log.error("Invalid Configuration for Job {}", jobId);
         }
 
         return job;
+    }
+
+    public List<Job> createSubJobs(Job job) {
+
+        log.info("Creating Sub Jobs for Job {}", job.getId());
+
+        String masterJobDirectory = JobStringConstants.getJobsDir() + "/"
+                + JobStringConstants.getCustomerProjectJobDir() + job.getId();
+        Path masterJobDirectoryPath = Paths.get(masterJobDirectory);
+
+        Stream<Path> dirs = null;
+
+        try {
+            dirs = Files.list(masterJobDirectoryPath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        List<Job> subJobs = new ArrayList<>();
+        ObjectMapper mapper = new ObjectMapper();
+
+        dirs.forEach( (d) -> {
+
+            if(d.toFile().isDirectory()) {
+
+                Path subJobConfigFile = Paths.get(d.toString() + "/" + JobStringConstants.getJobConfigFile());
+                Job currentSubJob = null;
+
+                try {
+                    currentSubJob = mapper.readValue(subJobConfigFile.toFile(), Job.class);
+                    subJobs.add(currentSubJob);
+                } catch (IOException e) {
+                    log.error("Invalid Configuration for Sub Job");
+                }
+            }
+        });
+
+        log.info("Creating Sub Jobs for Job {} DONE", job.getId());
+
+        return subJobs;
     }
 
     public List<JobResult> getJobResults(Long jobId) {
@@ -91,9 +135,9 @@ public class CometShellUtil {
         String resultsFilePath = JobStringConstants.getJobsDir() + "/"
                 + JobStringConstants.getCustomerProjectJobDir() + jobId + "/"
                 + String.format(JobStringConstants.getJobResultFile(), jobId);
-        File jobResultsFile = new File(resultsFilePath);
+        Path jobResultsFile = Paths.get(resultsFilePath);
 
-        if(!jobResultsFile.exists()) {
+        if(!Files.exists(jobResultsFile)) {
             log.error("Results for Job {} don't exist!", jobId);
             return null;
         }
@@ -102,7 +146,7 @@ public class CometShellUtil {
         List<JobResult> jobResults = null;
 
         try {
-            jobResults = Arrays.asList(mapper.readValue(jobResultsFile, JobResult[].class));
+            jobResults = Arrays.asList(mapper.readValue(jobResultsFile.toFile(), JobResult[].class));
         } catch (IOException e) {
             log.error("Invalid Results file for Job {}", jobId);
         }
@@ -170,9 +214,9 @@ public class CometShellUtil {
         String jobConfigFilePath = JobStringConstants.getJobsDir() + "/"
                 + JobStringConstants.getCustomerProjectJobDir() + jobId + "/"
                 + JobStringConstants.getJobConfigFile();
-        File configFile = new File(jobConfigFilePath);
+        Path configFile = Paths.get(jobConfigFilePath);
 
-        if(configFile.exists()) {
+        if(Files.exists(configFile)) {
             return true;
         }
 

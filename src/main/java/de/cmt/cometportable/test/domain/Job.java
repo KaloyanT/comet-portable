@@ -53,6 +53,8 @@ public class Job implements Serializable {
 
     private boolean importTestResultsOnJobCompletion = true;
 
+    private boolean hasMapping;
+
     public boolean isLinkedEnvironment() {
         // return linkedEnvironment;
         return this.getEnvironmentAddress() == null;
@@ -163,5 +165,13 @@ public class Job implements Serializable {
 
     public void setLocalEnvironment(boolean localEnvironment) {
         this.localEnvironment = localEnvironment;
+    }
+
+    public boolean getHasMapping() {
+        return hasMapping;
+    }
+
+    public void setHasMapping(boolean hasMapping) {
+        this.hasMapping = hasMapping;
     }
 }

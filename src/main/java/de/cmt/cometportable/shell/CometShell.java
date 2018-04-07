@@ -2,6 +2,7 @@ package de.cmt.cometportable.shell;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.cmt.cometportable.adaptation.ComplianceExecution;
+import de.cmt.cometportable.adaptation.ComplianceExecutionComplex;
 import de.cmt.cometportable.test.domain.Environment;
 import de.cmt.cometportable.test.domain.EnvironmentAuthenticationType;
 import de.cmt.cometportable.test.domain.Job;
@@ -54,8 +55,6 @@ public class CometShell {
 
         Job job = cometShellUtil.createJob(jobId);
 
-        log.info(sshKeyFile);
-
         if(job == null) {
             return;
         }
@@ -66,7 +65,7 @@ public class CometShell {
             job.setImportTestResultsOnJobCompletion(false);
         }
 
-        if(localEnvironment == true) {
+        if(localEnvironment == true && job.getEnvironments().size() == 1) {
             job.setLocalEnvironment(true);
 
         // Handle the other environments too
@@ -79,11 +78,17 @@ public class CometShell {
         }
 
         // create Execution based on Job
-        ComplianceExecution execution = new ComplianceExecution(job);
-        beanFactory.autowireBean(execution);
+        if(job.getHasMapping() == true) {
+            ComplianceExecutionComplex execution = new ComplianceExecutionComplex(job);
+            beanFactory.autowireBean(execution);
+            this.taskExecutor.execute(execution);
 
-        this.taskExecutor.execute(execution);
-
+        } else {
+            ComplianceExecution execution = new ComplianceExecution(job);
+            beanFactory.autowireBean(execution);
+            this.taskExecutor.execute(execution);
+        }
+        
         log.info("Starting Job {} asynchronously. You will be notified after every status update", job.getId());
         log.info("Return to Shell by pressing ENTER");
 
