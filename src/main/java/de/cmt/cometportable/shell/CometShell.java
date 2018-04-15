@@ -65,7 +65,7 @@ public class CometShell {
             job.setImportTestResultsOnJobCompletion(false);
         }
 
-        if(localEnvironment == true && job.getEnvironments().size() == 1) {
+        if(localEnvironment == true && job.getEnvironments().size() == 1 && job.getHasMapping() == false) {
             job.setLocalEnvironment(true);
 
         // Handle the other environments too
