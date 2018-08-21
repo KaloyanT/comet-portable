@@ -66,7 +66,7 @@ public class CometShellUtil {
 
         log.info("Reading configuration for Job {}", jobId);
 
-        if(this.jobExists(jobId) == false) {
+        if(!this.jobExists(jobId)) {
             log.error("Job {} doesn't exist!", jobId);
             return null;
         }
@@ -189,7 +189,7 @@ public class CometShellUtil {
             return;
         }
 
-        if(this.jobExists(jobId) == true) {
+        if(this.jobExists(jobId)) {
             log.error("Job Directory for Job {} already exists", jobId);
             return;
         }
